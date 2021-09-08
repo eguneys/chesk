@@ -28,6 +28,11 @@ data Vision = Vision { origin :: Coord,
 -- 3 5 [3, 4, 5]
 -- 
 
+directVision :: Vision -> Bool
+directVision vSrc =
+  null $ blocks vSrc
+  
+
 captureVision :: Vision -> Vision -> Bool
 captureVision vSrc vDest = 
   eyes vSrc == origin vDest
@@ -109,28 +114,38 @@ board = [blackKingb5,
          whiteKinga4,
           whiteRookc4]
 
-visions:: Piese -> [Vision]
-visions p = []
-
 -- [Piese]
 -- Piese -> [Vision]
 -- Vision -> Vision -> Bool
 
 -- White Rook is checking Black King
 
-
-mapso :: [Piese] -> ColorMap (RoleMap [Coord])
-mapso lst = fmap (fmap (fmap coord))
-  (fmap (roleMapFromList (role.piece)) (colorMapFromList (color.piece) lst))
-  
+type CoroMap a = ColorMap (RoleMap a)
 
 
--- [a] -> ColorMap RoleMap [a]
+mapso :: [Piese] -> CoroMap [Piese]
+mapso lst = 
+  fmap (roleMapFromList (role.piece))
+  (colorMapFromList (color.piece) lst)
+
+
+visions:: Piese -> [Vision]
+visions p = []
+
+-- f [a] -> (a -> [b]) -> f [b]
+-- CoroMap [Piese] -> CoroMap [Vision]
+-- (fmap . concatMap) visions
+
+-- CoroMap [Vision] -> CoroMap Check
+
+checkVision :: Vision -> Vision -> Maybe Check
+checkVision vSrc vDest
+  | captureVision vSrc vDest && 
+    directVision vSrc = Just (Check vSrc)
+  | otherwise = Nothing
 
 
 
--- colorMapFromList :: (a -> Color) -> [a] -> ColorMap [a]
--- roleMapFromList :: (a -> Role) -> [a] -> RoleMap [a]
 
 instance Show File where
   show (File A)  = "a"
